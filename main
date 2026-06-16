@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提出前チェッカー</title>
+<style>
+body {
+  font-family: sans-serif;
+  background: #f7f5ef;
+  padding: 16px;
+  color: #222;
+}
+
+h1 {
+  font-size: 22px;
+}
+
+textarea {
+  width: 100%;
+  height: 260px;
+  font-size: 16px;
+  line-height: 1.7;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  font-size: 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #333;
+  color: white;
+}
+
+.alert {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff3cd;
+  color: #7a5200;
+}
+
+.ok {
+  background: #e7f6e7;
+  color: #206020;
+}
+
+.preview {
+  margin-top: 16px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #ddd;
+  min-height: 80px;
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+.bad {
+  color: red;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+<h1>全角半角チェッカー</h1>
+
+<textarea id="memo" placeholder="ここに文章を貼り付け"></textarea>
+
+<button onclick="convertText()">全角英数字・カッコを半角に変換</button>
+<button onclick="copyText()">修正版をコピー</button>
+<button onclick="clearText()">クリア</button>
+
+<div id="message" class="alert"></div>
+
+<h2>チェック表示</h2>
+<div id="preview" class="preview"></div>
+
+<script>
+const memo = document.getElementById("memo");
+const message = document.getElementById("message");
+const preview = document.getElementById("preview");
+
+const pattern = /[０-９Ａ-Ｚａ-ｚ（）]/g;
+
+// 前回の一時保存を復元
+memo.value = localStorage.getItem("memoText") || "";
+checkText();
+
+memo.addEventListener("input", () => {
+  localStorage.setItem("memoText", memo.value);
+  checkText();
+});
+
+function checkText() {
+  const text = memo.value;
+  const matches = text.match(pattern);
+
+  if (matches) {
+    message.className = "alert";
+    message.textContent =
+      "⚠ 全角英数字・全角カッコがあります： " +
+      [...new Set(matches)].join(" ");
+  } else {
+    message.className = "alert ok";
+    message.textContent = "OK！対象文字はありません。";
+  }
+
+  preview.innerHTML = escapeHtml(text).replace(
+    pattern,
+    '<span class="bad">$&</span>'
+  );
+}
+
+function convertText() {
+  let text = memo.value;
+
+  text = text.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+    return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+  });
+
+  text = text.replaceAll("（", "(").replaceAll("）", ")");
+
+  memo.value = text;
+  localStorage.setItem("memoText", text);
+  checkText();
+}
+
+function copyText() {
+  navigator.clipboard.writeText(memo.value);
+  alert("コピーしました！");
+}
+
+function clearText() {
+  if (confirm("入力内容を消しますか？")) {
+    memo.value = "";
+    localStorage.removeItem("memoText");
+    checkText();
+  }
+}
+
+function escapeHtml(str) {
+  return str
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+</script>
+</body>
+</html>
