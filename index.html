@@ -8,6 +8,8 @@
 body {
   font-family: sans-serif;
   background: #f7f5ef;
+  max-width: 1000px;
+  margin: 0 auto;
   padding: 10px;
   color: #222;
   font-size: 13px;
@@ -30,6 +32,11 @@ textarea {
   line-height: 1.5;
   padding: 8px;
   box-sizing: border-box;
+
+  @media (min-width: 768px) { /* PC */
+  textarea {
+    font-size: 14px;
+  }
 }
 
 button {
