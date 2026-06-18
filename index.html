@@ -7,16 +7,17 @@
 <style>
 body {
   font-family: sans-serif;
-  background: #f7f5ef;
+  background: #232124;
+  color: #e8e3d8;
   max-width: 1000px;
   margin: 0 auto;
   padding: 10px;
-  color: #222;
   font-size: 13px;
 }
 
 h1 {
   font-size: 18px;
+  color: #e5d4a5;
   margin: 6px 0 10px;
 }
 
@@ -27,18 +28,35 @@ h2 {
 
 textarea {
   width: 100%;
-  height: 180px;
   font-size: 16px; /* iPhoneズーム防止 */
   line-height: 1.5;
   padding: 8px;
   box-sizing: border-box;
 }
 
-/* PC */ 
-@media (min-width: 768px) {
+/* PC */
+@media (min-width: 400px) {
   textarea {
-    font-size: 14px;
+    font-size: 12px;
   }
+}
+
+::selection {
+  background: #d7b6d8;
+  color: #fff;
+}
+
+#source {
+  background: #2d2b2f;
+  color: #d9d2c3;
+  border: 1px solid #4a464d;
+}
+
+#memo {
+  height: 180px;
+  background: #2a282c;
+  color: #f2ede3;
+  border: 1px solid #4a464d;
 }
 
 button {
@@ -48,8 +66,12 @@ button {
   font-size: 13px;
   border: 0;
   border-radius: 8px;
-  background: #333;
-  color: white;
+  background: #4d4456;
+  color: #f6f1e8;
+}
+
+button:hover {
+  background: #5c5268;
 }
 
 .alert {
@@ -64,6 +86,7 @@ button {
   color: #7a5200;
   font-size: 13px;
 }
+
 .ok {
   background: #e7f6e7;
   color: #206020;
@@ -72,8 +95,8 @@ button {
 .preview {
   margin-top: 10px;
   padding: 8px;
-  background: white;
-  border: 1px solid #ddd;
+  background: #2a282c;
+  border: 1px solid #4a464d;
   min-height: 60px;
   white-space: pre-wrap;
   line-height: 1.6;
@@ -90,19 +113,22 @@ button {
 <body>
 <h1>全角半角チェッカー</h1>
 
+<h2>引用元</h2>
+<textarea id="source" placeholder="相手のメッセージをここに貼る"></textarea>
+
+<h2>返信文</h2>
 <div id="message" class="alert"></div>
 
-<textarea id="memo" placeholder="ここに文章を貼り付け"></textarea>
+<textarea id="memo" placeholder="ここに文章を書く"></textarea>
 
 <button onclick="convertText()">全角英数字・カッコを半角に変換</button>
-<button onclick="copyText()">修正版をコピー</button>
-<button onclick="clearText()">クリア</button>
-
+<button onclick="copyText()">コピー</button>
 
 <h2>チェック表示</h2>
 <div id="preview" class="preview"></div>
 
 <script>
+const source = document.getElementById("source");
 const memo = document.getElementById("memo");
 const message = document.getElementById("message");
 const preview = document.getElementById("preview");
@@ -110,8 +136,13 @@ const preview = document.getElementById("preview");
 const pattern = /[０-９Ａ-Ｚａ-ｚ（）]/g;
 
 // 前回の一時保存を復元
+source.value = localStorage.getItem("sourceText") || "";
 memo.value = localStorage.getItem("memoText") || "";
 checkText();
+
+source.addEventListener("input", () => {
+  localStorage.setItem("sourceText", source.value);
+});
 
 memo.addEventListener("input", () => {
   localStorage.setItem("memoText", memo.value);
@@ -154,15 +185,6 @@ function convertText() {
 
 function copyText() {
   navigator.clipboard.writeText(memo.value);
-  alert("コピーしました！");
-}
-
-function clearText() {
-  if (confirm("入力内容を消しますか？")) {
-    memo.value = "";
-    localStorage.removeItem("memoText");
-    checkText();
-  }
 }
 
 function escapeHtml(str) {
