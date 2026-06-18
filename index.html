@@ -32,12 +32,13 @@ textarea {
   line-height: 1.5;
   padding: 8px;
   box-sizing: border-box;
+  border-radius: 8px;
 }
 
 /* PC */
-@media (min-width: 400px) {
+@media (min-width: 768px) {
   textarea {
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 
@@ -47,6 +48,7 @@ textarea {
 }
 
 #source {
+  height: 150px;
   background: #2d2b2f;
   color: #d9d2c3;
   border: 1px solid #4a464d;
@@ -74,6 +76,14 @@ button:hover {
   background: #5c5268;
 }
 
+.danger {
+  background: #7a4d58;
+}
+
+.danger:hover {
+  background: #8e5c69;
+}
+
 .alert {
   position: sticky;
   top: 0;
@@ -97,6 +107,7 @@ button:hover {
   padding: 8px;
   background: #2a282c;
   border: 1px solid #4a464d;
+  border-radius: 8px;
   min-height: 60px;
   white-space: pre-wrap;
   line-height: 1.6;
@@ -104,8 +115,31 @@ button:hover {
 }
 
 .bad {
-  color: red;
+  color: #ff6b6b;
   font-weight: bold;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 999;
+
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #d7b6d8;
+  color: #232124;
+  font-size: 13px;
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 </style>
 </head>
@@ -123,17 +157,23 @@ button:hover {
 
 <button onclick="convertText()">全角英数字・カッコを半角に変換</button>
 <button onclick="copyText()">コピー</button>
+<button onclick="clearAll()" class="danger">クリア</button>
 
 <h2>チェック表示</h2>
 <div id="preview" class="preview"></div>
+
+<div id="toast" class="toast">コピーしました</div>
 
 <script>
 const source = document.getElementById("source");
 const memo = document.getElementById("memo");
 const message = document.getElementById("message");
 const preview = document.getElementById("preview");
+const toast = document.getElementById("toast");
 
 const pattern = /[０-９Ａ-Ｚａ-ｚ（）]/g;
+
+let toastTimer;
 
 // 前回の一時保存を復元
 source.value = localStorage.getItem("sourceText") || "";
@@ -185,6 +225,33 @@ function convertText() {
 
 function copyText() {
   navigator.clipboard.writeText(memo.value);
+  showToast("コピーしました");
+}
+
+function clearAll() {
+  if (!confirm("引用元と返信文を消しますか？")) {
+    return;
+  }
+
+  source.value = "";
+  memo.value = "";
+
+  localStorage.removeItem("sourceText");
+  localStorage.removeItem("memoText");
+
+  checkText();
+  showToast("クリアしました");
+}
+
+function showToast(text) {
+  toast.textContent = text;
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 1400);
 }
 
 function escapeHtml(str) {
