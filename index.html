@@ -28,14 +28,13 @@ h2 {
 
 textarea {
   width: 100%;
-  font-size: 16px; /* iPhoneズーム防止 */
+  font-size: 16px;
   line-height: 1.5;
   padding: 8px;
   box-sizing: border-box;
   border-radius: 8px;
 }
 
-/* PC */
 @media (min-width: 768px) {
   textarea {
     font-size: 14px;
@@ -50,8 +49,7 @@ textarea {
 #source {
   height: 150px;
   background: #2d2b2f;
-  font-size: 12px;
-  color: #b5aea3;
+  color: #d9d2c3;
   border: 1px solid #4a464d;
 }
 
@@ -89,7 +87,6 @@ button:hover {
   position: sticky;
   top: 0;
   z-index: 10;
-
   margin-bottom: 8px;
   padding: 8px;
   border-radius: 8px;
@@ -120,13 +117,18 @@ button:hover {
   font-weight: bold;
 }
 
+.warn {
+  color: #ffd166;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
 .toast {
   position: fixed;
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%) translateY(20px);
   z-index: 999;
-
   padding: 10px 14px;
   border-radius: 999px;
   background: #d7b6d8;
@@ -146,7 +148,7 @@ button:hover {
 </head>
 
 <body>
-<h1>全角半角チェッカー</h1>
+<h1>nyonyonyo</h1>
 
 <h2>引用元</h2>
 <textarea id="source" placeholder="相手のメッセージをここに貼る"></textarea>
@@ -172,11 +174,11 @@ const message = document.getElementById("message");
 const preview = document.getElementById("preview");
 const toast = document.getElementById("toast");
 
-const pattern = /[０-９Ａ-Ｚａ-ｚ（）]/g;
+const errorPattern = /[０-９Ａ-Ｚａ-ｚ（）!?]/g;
+const warningPattern = /修/g;
 
 let toastTimer;
 
-// 前回の一時保存を復元
 source.value = localStorage.getItem("sourceText") || "";
 memo.value = localStorage.getItem("memoText") || "";
 checkText();
@@ -192,21 +194,39 @@ memo.addEventListener("input", () => {
 
 function checkText() {
   const text = memo.value;
-  const matches = text.match(pattern);
 
-  if (matches) {
-    message.className = "alert";
-    message.textContent =
-      "⚠ 全角英数字・全角カッコがあります： " +
-      [...new Set(matches)].join(" ");
-  } else {
+  const errors = text.match(errorPattern);
+  const warnings = text.match(warningPattern);
+
+  let messages = [];
+
+  if (errors) {
+    messages.push(
+      "要修正: " +
+      [...new Set(errors)].join(" ")
+    );
+  }
+
+  if (warnings) {
+    messages.push("確認: 修");
+  }
+
+  if (messages.length === 0) {
     message.className = "alert ok";
     message.textContent = "OK！対象文字はありません。";
+  } else {
+    message.className = "alert";
+    message.innerHTML = messages.join("<br>");
   }
 
   preview.innerHTML = escapeHtml(text).replace(
-    pattern,
-    '<span class="bad">$&</span>'
+    /[０-９Ａ-Ｚａ-ｚ（）!?修]/g,
+    function(s) {
+      if (s === "修") {
+        return '<span class="warn">' + s + '</span>';
+      }
+      return '<span class="bad">' + s + '</span>';
+    }
   );
 }
 
@@ -217,7 +237,11 @@ function convertText() {
     return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
   });
 
-  text = text.replaceAll("（", "(").replaceAll("）", ")");
+  text = text
+    .replaceAll("（", "(")
+    .replaceAll("）", ")")
+    .replaceAll("!", "！")
+    .replaceAll("?", "？");
 
   memo.value = text;
   localStorage.setItem("memoText", text);
