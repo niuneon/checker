@@ -5,10 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>nyonyonyo</title>
 <style>
+:root {
+  --bg: #232124;
+  --panel: #2a282c;
+  --panel2: #2d2b2f;
+  --text: #e8e3d8;
+  --subtext: #d9d2c3;
+  --border: #4a464d;
+  --button: #4d4456;
+  --button-hover: #5c5268;
+  --danger: #7a4d58;
+  --danger-hover: #8e5c69;
+  --title: #e5d4a5;
+  --alert-bg: #fff3cd;
+  --alert-text: #7a5200;
+  --ok-bg: #e7f6e7;
+  --ok-text: #206020;
+  --error: #ff6b6b;
+  --check: #ffd166;
+  --selection: #d7b6d8;
+  --toast-bg: #d7b6d8;
+  --toast-text: #232124;
+}
+
 body {
   font-family: sans-serif;
-  background: #232124;
-  color: #e8e3d8;
+  background: var(--bg);
+  color: var(--text);
   max-width: 1000px;
   margin: 0 auto;
   padding: 10px;
@@ -17,13 +40,30 @@ body {
 
 h1 {
   font-size: 18px;
-  color: #e5d4a5;
+  color: var(--title);
   margin: 6px 0 10px;
 }
 
 h2 {
   font-size: 15px;
   margin: 12px 0 6px;
+}
+
+.theme-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 13px;
 }
 
 textarea {
@@ -35,29 +75,29 @@ textarea {
   border-radius: 8px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 500px) {
   textarea {
     font-size: 14px;
   }
 }
 
 ::selection {
-  background: #d7b6d8;
+  background: var(--selection);
   color: #fff;
 }
 
 #source {
   height: 150px;
-  background: #2d2b2f;
-  color: #d9d2c3;
-  border: 1px solid #4a464d;
+  background: var(--panel2);
+  color: var(--subtext);
+  border: 1px solid var(--border);
 }
 
 #memo {
   height: 180px;
-  background: #2a282c;
-  color: #f2ede3;
-  border: 1px solid #4a464d;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 button {
@@ -67,20 +107,20 @@ button {
   font-size: 13px;
   border: 0;
   border-radius: 8px;
-  background: #4d4456;
+  background: var(--button);
   color: #f6f1e8;
 }
 
 button:hover {
-  background: #5c5268;
+  background: var(--button-hover);
 }
 
 .danger {
-  background: #7a4d58;
+  background: var(--danger);
 }
 
 .danger:hover {
-  background: #8e5c69;
+  background: var(--danger-hover);
 }
 
 .alert {
@@ -90,21 +130,21 @@ button:hover {
   margin-bottom: 8px;
   padding: 8px;
   border-radius: 8px;
-  background: #fff3cd;
-  color: #7a5200;
+  background: var(--alert-bg);
+  color: var(--alert-text);
   font-size: 13px;
 }
 
 .ok {
-  background: #e7f6e7;
-  color: #206020;
+  background: var(--ok-bg);
+  color: var(--ok-text);
 }
 
 .preview {
   margin-top: 10px;
   padding: 8px;
-  background: #2a282c;
-  border: 1px solid #4a464d;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 8px;
   min-height: 60px;
   white-space: pre-wrap;
@@ -113,12 +153,12 @@ button:hover {
 }
 
 .bad {
-  color: #ff6b6b;
+  color: var(--error);
   font-weight: bold;
 }
 
 .warn {
-  color: #ffd166;
+  color: var(--check);
   font-weight: bold;
   text-decoration: underline;
 }
@@ -131,8 +171,8 @@ button:hover {
   z-index: 999;
   padding: 10px 14px;
   border-radius: 999px;
-  background: #d7b6d8;
-  color: #232124;
+  background: var(--toast-bg);
+  color: var(--toast-text);
   font-size: 13px;
   font-weight: bold;
   opacity: 0;
@@ -149,6 +189,17 @@ button:hover {
 
 <body>
 <h1>nyonyonyo</h1>
+
+<div class="theme-row">
+  <select id="themeSelect">
+    <option value="night">Midnight</option>
+    <option value="cafe">Latte</option>
+    <option value="lavender">Lavender</option>
+    <option value="sakura">Hanami</option>
+    <option value="pudding">Pudding</option>
+    <option value="sumi">Sumi</option>
+  </select>
+</div>
 
 <h2>引用元</h2>
 <textarea id="source" placeholder="相手のメッセージをここに貼る"></textarea>
@@ -173,11 +224,141 @@ const memo = document.getElementById("memo");
 const message = document.getElementById("message");
 const preview = document.getElementById("preview");
 const toast = document.getElementById("toast");
+const themeSelect = document.getElementById("themeSelect");
 
 const errorPattern = /[０-９Ａ-Ｚａ-ｚ（）!?]/g;
 const warningPattern = /修/g;
 
 let toastTimer;
+
+const themes = {
+  night: {
+    bg: "#232124",
+    panel: "#2a282c",
+    panel2: "#2d2b2f",
+    text: "#e8e3d8",
+    subtext: "#d9d2c3",
+    border: "#4a464d",
+    button: "#4d4456",
+    buttonHover: "#5c5268",
+    danger: "#7a4d58",
+    dangerHover: "#8e5c69",
+    title: "#e5d4a5",
+    selection: "#d7b6d8",
+    toastBg: "#d7b6d8",
+    toastText: "#232124"
+  },
+  cafe: {
+    bg: "#2c2520",
+    panel: "#3a312b",
+    panel2: "#342c27",
+    text: "#f0e4d5",
+    subtext: "#d7c4ad",
+    border: "#5a4a40",
+    button: "#876445",
+    buttonHover: "#9a7350",
+    danger: "#7b4d48",
+    dangerHover: "#8c5a54",
+    title: "#f2d7a1",
+    selection: "#c69c6d",
+    toastBg: "#f2d7a1",
+    toastText: "#2c2520"
+  },
+lavender: {
+  bg: "#f7f4f8",          // 少しだけ紫みのある白
+  panel: "#ffffff",       // 入力欄
+  panel2: "#f2edf5",      // 引用欄
+  text: "#4b4652",        // 濃いグレー
+  subtext: "#6c6575",
+  border: "#d8cfe2",
+  button: "#a688c7",      // ラベンダー
+  buttonHover: "#9574b8",
+  danger: "#d38fa3",      // くすみピンク
+  dangerHover: "#c77f95",
+  title: "#8264a9",       // 紫
+  selection: "#dcc8f0",
+  toastBg: "#b59ad8",
+  toastText: "#ffffff"
+},
+  sakura: {
+    bg: "#2d2630",
+    panel: "#3a313d",
+    panel2: "#342b37",
+    text: "#f3e6ef",
+    subtext: "#d8c2d2",
+    border: "#57465a",
+    button: "#86617a",
+    buttonHover: "#9a708d",
+    danger: "#7f4f65",
+    dangerHover: "#925c75",
+    title: "#ffd7ef",
+    selection: "#d7a6c9",
+    toastBg: "#ffd7ef",
+    toastText: "#2d2630"
+  },
+  pudding: {
+    bg: "#2b261f",
+    panel: "#393126",
+    panel2: "#332c23",
+    text: "#f3ead7",
+    subtext: "#d8c9aa",
+    border: "#5a4c38",
+    button: "#9a7a42",
+    buttonHover: "#ad8a4c",
+    danger: "#814d45",
+    dangerHover: "#965a51",
+    title: "#ffe1a6",
+    selection: "#e0b96b",
+    toastBg: "#ffe1a6",
+    toastText: "#2b261f"
+  },
+  sumi: {
+    bg: "#17191f",
+    panel: "#20232b",
+    panel2: "#1d2027",
+    text: "#e6e8ef",
+    subtext: "#bfc3d0",
+    border: "#3a3f4d",
+    button: "#3f4658",
+    buttonHover: "#4d566c",
+    danger: "#6e4654",
+    dangerHover: "#815363",
+    title: "#c9d4ff",
+    selection: "#8d9ad8",
+    toastBg: "#c9d4ff",
+    toastText: "#17191f"
+  }
+};
+
+function applyTheme(name) {
+  const t = themes[name] || themes.night;
+  const root = document.documentElement;
+
+  root.style.setProperty("--bg", t.bg);
+  root.style.setProperty("--panel", t.panel);
+  root.style.setProperty("--panel2", t.panel2);
+  root.style.setProperty("--text", t.text);
+  root.style.setProperty("--subtext", t.subtext);
+  root.style.setProperty("--border", t.border);
+  root.style.setProperty("--button", t.button);
+  root.style.setProperty("--button-hover", t.buttonHover);
+  root.style.setProperty("--danger", t.danger);
+  root.style.setProperty("--danger-hover", t.dangerHover);
+  root.style.setProperty("--title", t.title);
+  root.style.setProperty("--selection", t.selection);
+  root.style.setProperty("--toast-bg", t.toastBg);
+  root.style.setProperty("--toast-text", t.toastText);
+
+  localStorage.setItem("themeName", name);
+  themeSelect.value = name;
+}
+
+const savedTheme = localStorage.getItem("themeName") || "night";
+applyTheme(savedTheme);
+
+themeSelect.addEventListener("change", () => {
+  applyTheme(themeSelect.value);
+});
 
 source.value = localStorage.getItem("sourceText") || "";
 memo.value = localStorage.getItem("memoText") || "";
