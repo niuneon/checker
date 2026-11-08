@@ -98,6 +98,29 @@ textarea {
   border: 1px solid var(--border);
 }
 
+/* 返信文の文字数表示。テーマに馴染む控えめな色味 */
+.character-counts {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  padding: 7px 3px 1px;
+  color: var(--subtext);
+  font-size: 12px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.character-count {
+  white-space: nowrap;
+}
+.character-count strong {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
 button {
   width: 100%;
   margin-top: 8px;
@@ -338,6 +361,10 @@ button:hover { background: var(--button-hover); }
 <h2>返信文</h2>
 <div id="message" class="alert"></div>
 <textarea id="memo" placeholder="ここに文章を書く"></textarea>
+<div class="character-counts" aria-label="返信文の文字数（空白と改行を除く）">
+  <span class="character-count">全体 <strong id="totalCharCount">0</strong> 字</span>
+  <span class="character-count">括弧内 <strong id="parenthesesCharCount">0</strong> 字</span>
+</div>
 
 <button onclick="convertText()">全角英数字・カッコを半角に変換</button>
 <button onclick="copyText()">コピー</button>
@@ -369,6 +396,8 @@ button:hover { background: var(--button-hover); }
 <script>
 const source = document.getElementById("source");
 const memo = document.getElementById("memo");
+const totalCharCount = document.getElementById("totalCharCount");
+const parenthesesCharCount = document.getElementById("parenthesesCharCount");
 const message = document.getElementById("message");
 const preview = document.getElementById("preview");
 const toast = document.getElementById("toast");
@@ -478,6 +507,13 @@ function applyTheme(name) {
   localStorage.setItem("themeName", name);
   themeSelect.value = name;
 }
+
+// 全体と ()・（）の内側を数える（空白・改行は除外）。
+// 括弧内の数字に括弧記号自体は含めない。複数・入れ子の括弧に対応。
+// Intl.Segmenter が使える環境では絵文字なども見た目の1文字として数える。
+const characterSegmenter = typeof Intl.Segmenter === "function"
+  ? new Intl.Segmenter("ja", { granularity: "grapheme" })
+  : null;
 
 const savedTheme = localStorage.getItem("themeName") || "night";
 applyTheme(savedTheme);
@@ -637,8 +673,32 @@ function escapeRegExp(text) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function countCharacters(text) {
+  const characters = characterSegmenter
+    ? Array.from(characterSegmenter.segment(text), part => part.segment)
+    : Array.from(text);
+  let total = 0;
+  let inside = 0;
+  let bracketDepth = 0;
+  for (const char of characters) {
+    if (/^\s+$/u.test(char)) continue;
+    total++;
+    if (char === "(" || char === "（") {
+      bracketDepth++;
+    } else if (char === ")" || char === "）") {
+      if (bracketDepth > 0) bracketDepth--;
+    } else if (bracketDepth > 0) {
+      inside++;
+    }
+  }
+  return { total, inside };
+}
+
 function checkText() {
   const text = memo.value;
+  const { total, inside } = countCharacters(text);
+  totalCharCount.textContent = total.toLocaleString("ja-JP");
+  parenthesesCharCount.textContent = inside.toLocaleString("ja-JP");
   const errors = text.match(errorPattern);
   if (errors) {
     message.className = "alert";
