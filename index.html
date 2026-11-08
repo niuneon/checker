@@ -22,10 +22,19 @@
   --ok-bg: #e7f6e7;
   --ok-text: #206020;
   --error: #ff6b6b;
-  --check: #ffd166;
   --selection: #d7b6d8;
   --toast-bg: #d7b6d8;
   --toast-text: #232124;
+
+  /* 目が疲れにくい、くすみ系のハイライト */
+  --nagara-bg: rgba(191, 123, 100, 0.25);
+  --nagara-line: #bb8b7a;
+  --ruto-bg: rgba(104, 151, 178, 0.25);
+  --ruto-line: #83a9be;
+  --reba-bg: rgba(156, 129, 181, 0.26);
+  --reba-line: #ae97c2;
+  --teha-bg: rgba(120, 158, 131, 0.25);
+  --teha-line: #8eac96;
 }
 
 body {
@@ -76,9 +85,7 @@ textarea {
 }
 
 @media (min-width: 500px) {
-  textarea {
-    font-size: 14px;
-  }
+  textarea { font-size: 14px; }
 }
 
 ::selection {
@@ -109,19 +116,13 @@ button {
   border-radius: 8px;
   background: var(--button);
   color: #f6f1e8;
+  cursor: pointer;
 }
 
-button:hover {
-  background: var(--button-hover);
-}
+button:hover { background: var(--button-hover); }
 
-.danger {
-  background: var(--danger);
-}
-
-.danger:hover {
-  background: var(--danger-hover);
-}
+.danger { background: var(--danger); }
+.danger:hover { background: var(--danger-hover); }
 
 .alert {
   position: sticky;
@@ -148,20 +149,38 @@ button:hover {
   border-radius: 8px;
   min-height: 60px;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   line-height: 1.6;
   font-size: 13px;
 }
 
+/* 既存の半角チェック：要修正の文字だけ赤字 */
 .bad {
   color: var(--error);
   font-weight: bold;
 }
 
-.warn {
-  color: var(--check);
-  font-weight: bold;
-  text-decoration: underline;
+/* ハイライトは文字色を変えず、淡い背景＋細い下線 */
+.hl {
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  border-bottom: 1px solid;
 }
+.hl-nagara { background: var(--nagara-bg); border-color: var(--nagara-line); }
+.hl-ruto   { background: var(--ruto-bg); border-color: var(--ruto-line); }
+.hl-reba   { background: var(--reba-bg); border-color: var(--reba-line); }
+.hl-teha   { background: var(--teha-bg); border-color: var(--teha-line); }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  color: var(--subtext);
+  font-size: 12px;
+}
+.legend .hl { padding: 1px 4px; }
 
 .toast {
   position: fixed;
@@ -206,7 +225,6 @@ button:hover {
 
 <h2>返信文</h2>
 <div id="message" class="alert"></div>
-
 <textarea id="memo" placeholder="ここに文章を書く"></textarea>
 
 <button onclick="convertText()">全角英数字・カッコを半角に変換</button>
@@ -214,8 +232,13 @@ button:hover {
 <button onclick="clearAll()" class="danger">クリア</button>
 
 <h2>チェック表示</h2>
+<div class="legend" aria-label="ハイライトの色分け">
+  <span class="hl hl-nagara">ながら</span>
+  <span class="hl hl-ruto">ると</span>
+  <span class="hl hl-reba">れば</span>
+  <span class="hl hl-teha">ては</span>
+</div>
 <div id="preview" class="preview"></div>
-
 <div id="toast" class="toast">コピーしました</div>
 
 <script>
@@ -226,107 +249,68 @@ const preview = document.getElementById("preview");
 const toast = document.getElementById("toast");
 const themeSelect = document.getElementById("themeSelect");
 
+// 従来どおりのチェック対象（全角英数字・カッコ、半角 ! ?）
 const errorPattern = /[０-９Ａ-Ｚａ-ｚ（）!?]/g;
-const warningPattern = /修/g;
+
+// 全件ハイライト。重複の判定や自動修正はしない
+const highlightPattern = /ながら|ると|れば|ては|[０-９Ａ-Ｚａ-ｚ（）!?]/g;
+const highlightClasses = {
+  "ながら": "hl-nagara",
+  "ると": "hl-ruto",
+  "れば": "hl-reba",
+  "ては": "hl-teha"
+};
 
 let toastTimer;
 
 const themes = {
   night: {
-    bg: "#232124",
-    panel: "#2a282c",
-    panel2: "#2d2b2f",
-    text: "#e8e3d8",
-    subtext: "#d9d2c3",
-    border: "#4a464d",
-    button: "#4d4456",
-    buttonHover: "#5c5268",
-    danger: "#7a4d58",
-    dangerHover: "#8e5c69",
-    title: "#e5d4a5",
-    selection: "#d7b6d8",
-    toastBg: "#d7b6d8",
-    toastText: "#232124"
+    bg: "#232124", panel: "#2a282c", panel2: "#2d2b2f",
+    text: "#e8e3d8", subtext: "#d9d2c3", border: "#4a464d",
+    button: "#4d4456", buttonHover: "#5c5268",
+    danger: "#7a4d58", dangerHover: "#8e5c69",
+    title: "#e5d4a5", selection: "#d7b6d8",
+    toastBg: "#d7b6d8", toastText: "#232124"
   },
   cafe: {
-    bg: "#2c2520",
-    panel: "#3a312b",
-    panel2: "#342c27",
-    text: "#f0e4d5",
-    subtext: "#d7c4ad",
-    border: "#5a4a40",
-    button: "#876445",
-    buttonHover: "#9a7350",
-    danger: "#7b4d48",
-    dangerHover: "#8c5a54",
-    title: "#f2d7a1",
-    selection: "#c69c6d",
-    toastBg: "#f2d7a1",
-    toastText: "#2c2520"
+    bg: "#2c2520", panel: "#3a312b", panel2: "#342c27",
+    text: "#f0e4d5", subtext: "#d7c4ad", border: "#5a4a40",
+    button: "#876445", buttonHover: "#9a7350",
+    danger: "#7b4d48", dangerHover: "#8c5a54",
+    title: "#f2d7a1", selection: "#c69c6d",
+    toastBg: "#f2d7a1", toastText: "#2c2520"
   },
-lavender: {
-  bg: "#f7f4f8",          // 少しだけ紫みのある白
-  panel: "#ffffff",       // 入力欄
-  panel2: "#f2edf5",      // 引用欄
-  text: "#4b4652",        // 濃いグレー
-  subtext: "#6c6575",
-  border: "#d8cfe2",
-  button: "#a688c7",      // ラベンダー
-  buttonHover: "#9574b8",
-  danger: "#d38fa3",      // くすみピンク
-  dangerHover: "#c77f95",
-  title: "#8264a9",       // 紫
-  selection: "#dcc8f0",
-  toastBg: "#b59ad8",
-  toastText: "#ffffff"
-},
+  lavender: {
+    bg: "#f7f4f8", panel: "#ffffff", panel2: "#f2edf5",
+    text: "#4b4652", subtext: "#6c6575", border: "#d8cfe2",
+    button: "#a688c7", buttonHover: "#9574b8",
+    danger: "#d38fa3", dangerHover: "#c77f95",
+    title: "#8264a9", selection: "#dcc8f0",
+    toastBg: "#b59ad8", toastText: "#ffffff"
+  },
   sakura: {
-    bg: "#2d2630",
-    panel: "#3a313d",
-    panel2: "#342b37",
-    text: "#f3e6ef",
-    subtext: "#d8c2d2",
-    border: "#57465a",
-    button: "#86617a",
-    buttonHover: "#9a708d",
-    danger: "#7f4f65",
-    dangerHover: "#925c75",
-    title: "#ffd7ef",
-    selection: "#d7a6c9",
-    toastBg: "#ffd7ef",
-    toastText: "#2d2630"
+    bg: "#2d2630", panel: "#3a313d", panel2: "#342b37",
+    text: "#f3e6ef", subtext: "#d8c2d2", border: "#57465a",
+    button: "#86617a", buttonHover: "#9a708d",
+    danger: "#7f4f65", dangerHover: "#925c75",
+    title: "#ffd7ef", selection: "#d7a6c9",
+    toastBg: "#ffd7ef", toastText: "#2d2630"
   },
   pudding: {
-    bg: "#2b261f",
-    panel: "#393126",
-    panel2: "#332c23",
-    text: "#f3ead7",
-    subtext: "#d8c9aa",
-    border: "#5a4c38",
-    button: "#9a7a42",
-    buttonHover: "#ad8a4c",
-    danger: "#814d45",
-    dangerHover: "#965a51",
-    title: "#ffe1a6",
-    selection: "#e0b96b",
-    toastBg: "#ffe1a6",
-    toastText: "#2b261f"
+    bg: "#2b261f", panel: "#393126", panel2: "#332c23",
+    text: "#f3ead7", subtext: "#d8c9aa", border: "#5a4c38",
+    button: "#9a7a42", buttonHover: "#ad8a4c",
+    danger: "#814d45", dangerHover: "#965a51",
+    title: "#ffe1a6", selection: "#e0b96b",
+    toastBg: "#ffe1a6", toastText: "#2b261f"
   },
   sumi: {
-    bg: "#17191f",
-    panel: "#20232b",
-    panel2: "#1d2027",
-    text: "#e6e8ef",
-    subtext: "#bfc3d0",
-    border: "#3a3f4d",
-    button: "#3f4658",
-    buttonHover: "#4d566c",
-    danger: "#6e4654",
-    dangerHover: "#815363",
-    title: "#c9d4ff",
-    selection: "#8d9ad8",
-    toastBg: "#c9d4ff",
-    toastText: "#17191f"
+    bg: "#17191f", panel: "#20232b", panel2: "#1d2027",
+    text: "#e6e8ef", subtext: "#bfc3d0", border: "#3a3f4d",
+    button: "#3f4658", buttonHover: "#4d566c",
+    danger: "#6e4654", dangerHover: "#815363",
+    title: "#c9d4ff", selection: "#8d9ad8",
+    toastBg: "#c9d4ff", toastText: "#17191f"
   }
 };
 
@@ -375,40 +359,24 @@ memo.addEventListener("input", () => {
 
 function checkText() {
   const text = memo.value;
-
   const errors = text.match(errorPattern);
-  const warnings = text.match(warningPattern);
-
-  let messages = [];
 
   if (errors) {
-    messages.push(
-      "要修正: " +
-      [...new Set(errors)].join(" ")
-    );
-  }
-
-  if (warnings) {
-    messages.push("確認: 修");
-  }
-
-  if (messages.length === 0) {
-    message.className = "alert ok";
-    message.textContent = "OK！対象文字はありません。";
-  } else {
     message.className = "alert";
-    message.innerHTML = messages.join("<br>");
+    message.textContent = "要修正: " + [...new Set(errors)].join(" ");
+  } else {
+    message.className = "alert ok";
+    message.textContent = "OK！半角チェックの対象文字はありません。";
   }
 
-  preview.innerHTML = escapeHtml(text).replace(
-    /[０-９Ａ-Ｚａ-ｚ（）!?修]/g,
-    function(s) {
-      if (s === "修") {
-        return '<span class="warn">' + s + '</span>';
-      }
-      return '<span class="bad">' + s + '</span>';
+  // 元の文章に手を加えず、プレビュー上だけ装飾する
+  preview.innerHTML = escapeHtml(text).replace(highlightPattern, (matched) => {
+    const className = highlightClasses[matched];
+    if (className) {
+      return '<span class="hl ' + className + '">' + matched + '</span>';
     }
-  );
+    return '<span class="bad">' + matched + '</span>';
+  });
 }
 
 function convertText() {
@@ -435,16 +403,12 @@ function copyText() {
 }
 
 function clearAll() {
-  if (!confirm("引用元と返信文を消しますか？")) {
-    return;
-  }
+  if (!confirm("引用元と返信文を消しますか？")) return;
 
   source.value = "";
   memo.value = "";
-
   localStorage.removeItem("sourceText");
   localStorage.removeItem("memoText");
-
   checkText();
   showToast("クリアしました");
 }
@@ -452,9 +416,7 @@ function clearAll() {
 function showToast(text) {
   toast.textContent = text;
   toast.classList.add("show");
-
   clearTimeout(toastTimer);
-
   toastTimer = setTimeout(() => {
     toast.classList.remove("show");
   }, 1400);
