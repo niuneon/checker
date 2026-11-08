@@ -26,13 +26,6 @@
   --toast-bg: #d7b6d8;
   --toast-text: #232124;
 
-  /* 目が疲れにくい、くすみ系のハイライト */
-  --nagara-bg: rgba(191, 123, 100, 0.25);
-  --nagara-line: #bb8b7a;
-  --ruto-bg: rgba(104, 151, 178, 0.25);
-  --ruto-line: #83a9be;
-  --reba-bg: rgba(156, 129, 181, 0.26);
-  --reba-line: #ae97c2;
 }
 
 body {
@@ -158,27 +151,148 @@ button:hover { background: var(--button-hover); }
   font-weight: bold;
 }
 
-/* ハイライトは文字色を変えず、淡い背景＋細い下線 */
+/* 文字色は変えず、背景をほんのり色づけ＋細い下線 */
 .hl {
+  background: var(--mark-bg);
+  border-bottom: 1px solid var(--mark-line);
   border-radius: 3px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  border-bottom: 1px solid;
 }
-.hl-nagara { background: var(--nagara-bg); border-color: var(--nagara-line); }
-.hl-ruto   { background: var(--ruto-bg); border-color: var(--ruto-line); }
-.hl-reba,
-.hl-teha   { background: var(--reba-bg); border-color: var(--reba-line); }
+/* 8色とも低彩度。ライト／ダークテーマの両方で使える濃さ */
+.hl-terra    { --mark-bg: rgba(183, 114, 94, .24); --mark-line: #b78270; }
+.hl-blue     { --mark-bg: rgba(104, 150, 181, .24); --mark-line: #7b9fb6; }
+.hl-lavender { --mark-bg: rgba(156, 127, 178, .25); --mark-line: #aa91bf; }
+.hl-sage     { --mark-bg: rgba(117, 162, 131, .24); --mark-line: #82aa8f; }
+.hl-rose     { --mark-bg: rgba(185, 118, 149, .24); --mark-line: #bb859d; }
+.hl-amber    { --mark-bg: rgba(185, 154, 91, .24); --mark-line: #b49b65; }
+.hl-teal     { --mark-bg: rgba(88, 152, 151, .24); --mark-line: #79aaa8; }
+.hl-slate    { --mark-bg: rgba(126, 139, 168, .24); --mark-line: #919bb4; }
 
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: 7px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  min-height: 22px;
+}
+.legend .hl { padding: 2px 5px; }
+
+.highlight-settings {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.highlight-settings > summary {
+  padding: 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text);
+}
+.highlight-settings > summary:hover { background: var(--panel2); }
+.settings-body { padding: 0 12px 14px; }
+.settings-description, .settings-note {
+  color: var(--subtext);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.settings-description { margin: 0 0 10px; }
+.settings-note { margin: 8px 0 0; }
+.rule-list { display: grid; gap: 7px; margin-bottom: 16px; }
+.rule-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(125px, 180px) 36px;
+  gap: 8px;
   align-items: center;
+}
+.rule-word {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+.rule-word .hl { padding: 2px 4px; }
+.rule-item select { padding: 7px; }
+.remove-rule {
+  width: 36px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  font-size: 18px;
+  line-height: 1;
+}
+.remove-rule:hover { background: var(--danger); }
+.settings-heading {
+  font-size: 13px;
+  font-weight: bold;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+.settings-label { display: block; margin-bottom: 6px; font-size: 12px; }
+#newHighlightText {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel2);
+  color: var(--text);
+  font-size: 14px;
+}
+.color-choices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  margin: 8px 0 10px;
+}
+.color-option { display: block; cursor: pointer; min-width: 0; }
+.color-option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.color-option-face {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 4px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.color-option input:checked + .color-option-face {
+  border-color: var(--title);
+  outline: 1px solid var(--title);
+}
+.color-option input:focus-visible + .color-option-face { outline: 2px solid var(--title); }
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--mark-line);
+  flex-shrink: 0;
+}
+.settings-add-button { margin: 0; }
+.reset-rules {
+  width: auto;
+  padding: 6px 8px;
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
   color: var(--subtext);
   font-size: 12px;
 }
-.legend .hl { padding: 1px 4px; }
+.reset-rules:hover { background: var(--panel2); }
+@media (max-width: 420px) {
+  .color-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rule-item { grid-template-columns: minmax(0, 1fr) minmax(108px, 140px) 36px; gap: 5px; }
+}
 
 .toast {
   position: fixed;
@@ -230,14 +344,27 @@ button:hover { background: var(--button-hover); }
 <button onclick="clearAll()" class="danger">クリア</button>
 
 <h2>チェック表示</h2>
-<div class="legend" aria-label="ハイライトの色分け">
-  <span class="hl hl-nagara">ながら</span>
-  <span class="hl hl-ruto">ると</span>
-  <span class="hl hl-reba">れば</span>
-  <span class="hl hl-teha">ては</span>
-</div>
+<div id="legend" class="legend" aria-label="登録済みハイライト"></div>
 <div id="preview" class="preview"></div>
-<div id="toast" class="toast">コピーしました</div>
+
+<details class="highlight-settings" id="highlightSettings">
+  <summary>ハイライト設定（文字の追加・色変更・削除）</summary>
+  <div class="settings-body">
+    <p class="settings-description">登録した文字はすべて色付きで表示します。設定はこのブラウザに自動保存。返信文とコピー内容には影響しません。</p>
+    <div id="ruleList" class="rule-list" aria-label="登録済みの文字"></div>
+    <form id="addRuleForm">
+      <p class="settings-heading">新しく追加</p>
+      <label class="settings-label" for="newHighlightText">ハイライトしたい文字・フレーズ</label>
+      <input id="newHighlightText" type="text" placeholder="例：ものの" maxlength="40" required autocomplete="off">
+      <p class="settings-label" style="margin: 10px 0 6px;">色を選ぶ（8色）</p>
+      <div id="colorChoices" class="color-choices" role="group" aria-label="追加する文字の色"></div>
+      <button class="settings-add-button" type="submit">この文字を追加</button>
+    </form>
+    <button class="reset-rules" id="resetRules" type="button">ハイライト設定だけ初期状態に戻す</button>
+    <p class="settings-note">※長いフレーズと短い文字が重なる場合は、長いフレーズを優先して色付けします。</p>
+  </div>
+</details>
+<div id="toast" class="toast" role="status" aria-live="polite">コピーしました</div>
 
 <script>
 const source = document.getElementById("source");
@@ -250,14 +377,31 @@ const themeSelect = document.getElementById("themeSelect");
 // 従来どおりのチェック対象（全角英数字・カッコ、半角 ! ?）
 const errorPattern = /[０-９Ａ-Ｚａ-ｚ（）!?]/g;
 
-// 全件ハイライト。重複の判定や自動修正はしない
-const highlightPattern = /ながら|ると|れば|ては|[０-９Ａ-Ｚａ-ｚ（）!?]/g;
-const highlightClasses = {
-  "ながら": "hl-nagara",
-  "ると": "hl-ruto",
-  "れば": "hl-reba",
-  "ては": "hl-teha"
-};
+// ハイライトは重複回数に関係なく、出てきた箇所をすべて色付け。
+const RULES_STORAGE_KEY = "nyonyonyoHighlightRulesV1";
+const MAX_RULES = 60;
+const PALETTE = [
+  { id: "terra",    name: "テラコッタ" },
+  { id: "blue",     name: "ブルー" },
+  { id: "lavender", name: "ラベンダー" },
+  { id: "sage",     name: "セージ" },
+  { id: "rose",     name: "ローズ" },
+  { id: "amber",    name: "アンバー" },
+  { id: "teal",     name: "ティール" },
+  { id: "slate",    name: "スレート" }
+];
+const DEFAULT_RULES = [
+  { word: "ながら", color: "terra" },
+  { word: "ると", color: "blue" },
+  { word: "れば", color: "lavender" },
+  { word: "ては", color: "lavender" }
+];
+const legend = document.getElementById("legend");
+const ruleList = document.getElementById("ruleList");
+const addRuleForm = document.getElementById("addRuleForm");
+const newHighlightText = document.getElementById("newHighlightText");
+const colorChoices = document.getElementById("colorChoices");
+let highlightRules = loadHighlightRules();
 
 let toastTimer;
 
@@ -344,6 +488,8 @@ themeSelect.addEventListener("change", () => {
 
 source.value = localStorage.getItem("sourceText") || "";
 memo.value = localStorage.getItem("memoText") || "";
+renderColorChoices();
+renderHighlightSettings();
 checkText();
 
 source.addEventListener("input", () => {
@@ -355,10 +501,145 @@ memo.addEventListener("input", () => {
   checkText();
 });
 
+function loadHighlightRules() {
+  try {
+    const stored = localStorage.getItem(RULES_STORAGE_KEY);
+    if (stored === null) return DEFAULT_RULES.map(rule => ({ ...rule }));
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) throw new Error("設定形式が違います");
+    const seen = new Set();
+    return parsed.filter(rule => {
+      if (!rule || typeof rule.word !== "string" ||
+          typeof rule.color !== "string" ||
+          !rule.word.trim() || rule.word.length > 40 ||
+          !PALETTE.some(color => color.id === rule.color) ||
+          seen.has(rule.word) || seen.size >= MAX_RULES) return false;
+      seen.add(rule.word);
+      return true;
+    }).map(rule => ({ word: rule.word, color: rule.color }));
+  } catch (error) {
+    return DEFAULT_RULES.map(rule => ({ ...rule }));
+  }
+}
+
+function saveHighlightRules() {
+  try {
+    localStorage.setItem(RULES_STORAGE_KEY, JSON.stringify(highlightRules));
+  } catch (error) {
+    showToast("ブラウザに設定を保存できませんでした");
+  }
+  renderHighlightSettings();
+  checkText();
+}
+
+function renderColorChoices() {
+  colorChoices.replaceChildren();
+  for (const color of PALETTE) {
+    const label = document.createElement("label");
+    label.className = "color-option";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "newHighlightColor";
+    input.value = color.id;
+    input.checked = color.id === "terra";
+    const face = document.createElement("span");
+    face.className = "color-option-face";
+    const dot = document.createElement("span");
+    dot.className = "color-dot hl hl-" + color.id;
+    face.append(dot, document.createTextNode(color.name));
+    label.append(input, face);
+    colorChoices.append(label);
+  }
+}
+
+function renderHighlightSettings() {
+  legend.replaceChildren();
+  ruleList.replaceChildren();
+  if (highlightRules.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "settings-note";
+    empty.textContent = "登録された文字はありません。下のフォームから追加できます。";
+    ruleList.append(empty);
+  }
+  for (const rule of highlightRules) {
+    const chip = document.createElement("span");
+    chip.className = "hl hl-" + rule.color;
+    chip.textContent = rule.word;
+    legend.append(chip);
+
+    const row = document.createElement("div");
+    row.className = "rule-item";
+    const word = document.createElement("span");
+    word.className = "rule-word";
+    const wordChip = chip.cloneNode(true);
+    word.append(wordChip);
+
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", "「" + rule.word + "」の色を変更");
+    for (const color of PALETTE) {
+      const option = document.createElement("option");
+      option.value = color.id;
+      option.textContent = color.name;
+      select.append(option);
+    }
+    select.value = rule.color;
+    select.addEventListener("change", () => {
+      rule.color = select.value;
+      saveHighlightRules();
+    });
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "remove-rule";
+    remove.textContent = "×";
+    remove.title = "「" + rule.word + "」を削除";
+    remove.setAttribute("aria-label", remove.title);
+    remove.addEventListener("click", () => {
+      highlightRules = highlightRules.filter(item => item !== rule);
+      saveHighlightRules();
+      showToast("「" + rule.word + "」を削除しました");
+    });
+    row.append(word, select, remove);
+    ruleList.append(row);
+  }
+}
+
+addRuleForm.addEventListener("submit", event => {
+  event.preventDefault();
+  const word = newHighlightText.value.trim();
+  const checked = colorChoices.querySelector('input[name="newHighlightColor"]:checked');
+  const color = checked ? checked.value : "terra";
+  if (!word) return;
+  if (highlightRules.some(item => item.word === word)) {
+    showToast("その文字はすでに登録されています");
+    return;
+  }
+  if (highlightRules.length >= MAX_RULES) {
+    showToast("登録できるのは最大60件です");
+    return;
+  }
+  highlightRules.push({ word, color });
+  saveHighlightRules();
+  newHighlightText.value = "";
+  newHighlightText.focus();
+  showToast("「" + word + "」を追加しました");
+});
+
+document.getElementById("resetRules").addEventListener("click", () => {
+  if (!confirm("ハイライトの文字と色だけ初期状態に戻しますか？\n引用元と返信文は消えません。")) return;
+  highlightRules = DEFAULT_RULES.map(rule => ({ ...rule }));
+  saveHighlightRules();
+  showToast("ハイライト設定を元に戻しました");
+});
+
+// 正規表現で特別な意味を持つ記号も、登録文字としてそのまま扱う。
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function checkText() {
   const text = memo.value;
   const errors = text.match(errorPattern);
-
   if (errors) {
     message.className = "alert";
     message.textContent = "要修正: " + [...new Set(errors)].join(" ");
@@ -367,14 +648,29 @@ function checkText() {
     message.textContent = "OK！半角チェックの対象文字はありません。";
   }
 
-  // 元の文章に手を加えず、プレビュー上だけ装飾する
-  preview.innerHTML = escapeHtml(text).replace(highlightPattern, (matched) => {
-    const className = highlightClasses[matched];
-    if (className) {
-      return '<span class="hl ' + className + '">' + matched + '</span>';
+  // 長い表現から優先。HTMLとして解釈させないよう、必ず文字列をエスケープ。
+  const sorted = [...highlightRules].sort((a, b) => b.word.length - a.word.length);
+  const byWord = new Map(sorted.map(rule => [rule.word, rule]));
+  const pieces = sorted.map(rule => escapeRegExp(rule.word));
+  pieces.push("[０-９Ａ-Ｚａ-ｚ（）!?]");
+  const pattern = new RegExp(pieces.join("|"), "gu");
+  let html = "";
+  let cursor = 0;
+  for (const match of text.matchAll(pattern)) {
+    html += escapeHtml(text.slice(cursor, match.index));
+    const token = match[0];
+    const rule = byWord.get(token);
+    if (rule) {
+      // 登録文字にチェック対象が含まれても、その文字だけは赤字にする。
+      const safe = escapeHtml(token).replace(errorPattern, ch => '<span class="bad">' + ch + '</span>');
+      html += '<span class="hl hl-' + rule.color + '">' + safe + '</span>';
+    } else {
+      html += '<span class="bad">' + escapeHtml(token) + '</span>';
     }
-    return '<span class="bad">' + matched + '</span>';
-  });
+    cursor = match.index + token.length;
+  }
+  html += escapeHtml(text.slice(cursor));
+  preview.innerHTML = html;
 }
 
 function convertText() {
